@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Container, Typography, Box, CircularProgress, Paper, MenuItem, Select, InputLabel, FormControl, TextField } from '@mui/material';
-import styled from '@emotion/styled'; // Default import for styled from @emotion/styled
+import styled from '@emotion/styled';
 import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
 import axios from 'axios';
 
@@ -42,10 +42,13 @@ function App() {
   const [coin, setCoin] = useState('');
   const [customCoin, setCustomCoin] = useState('');
   const [useCustomCoin, setUseCustomCoin] = useState(false);
-  const [cryptoData, setCryptoData] = useState(null);
-  const [deviation, setDeviation] = useState(null);
+  const [responses, setResponses] = useState([]); // Store multiple responses
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const getCurrentTimestamp = () => {
+    return new Date().toLocaleString(); // Returns the current timestamp
+  };
 
   const handleFetchCryptoStats = async () => {
     setLoading(true);
@@ -55,7 +58,10 @@ function App() {
       const { data } = await axios.get('http://localhost:3000/stats', {
         params: { coin: coinToFetch },
       });
-      setCryptoData(data);
+      setResponses((prev) => [
+        { type: 'stats', coin: coinToFetch, data, timestamp: getCurrentTimestamp() },
+        ...prev,
+      ]); // Add new response with timestamp and coin name
     } catch (err) {
       setError('Failed to fetch data');
     } finally {
@@ -71,7 +77,11 @@ function App() {
       const { data } = await axios.get('http://localhost:3000/deviation', {
         params: { coin: coinToFetch },
       });
-      setDeviation(data.deviation);
+      setResponses((prev) => [
+        
+        { type: 'deviation', coin: coinToFetch, data: data.deviation, timestamp: getCurrentTimestamp() },
+        ...prev,
+      ]); // Add new response with timestamp and coin name
     } catch (err) {
       setError('Failed to fetch data');
     } finally {
@@ -81,7 +91,7 @@ function App() {
 
   return (
     <ThemeProvider theme={darkTheme}>
-      <CssBaseline /> {/* Ensures dark theme is applied globally */}
+      <CssBaseline />
       <StyledContainer maxWidth="sm">
         <Typography variant="h3" gutterBottom color="primary">
           KoinX Crypto Insights
@@ -158,19 +168,34 @@ function App() {
 
         {error && <Typography color="error" style={{ marginTop: '20px' }}>{error}</Typography>}
 
-        {cryptoData && (
-          <CryptoDataBox component={Paper}>
-            <Typography variant="h6" color="primary">Price: ${cryptoData.price}</Typography>
-            <Typography variant="h6" color="primary">Market Cap: ${cryptoData.marketCap}</Typography>
-            <Typography variant="h6" color="primary">24h Change: {cryptoData.change24h}%</Typography>
-          </CryptoDataBox>
-        )}
+        {/* Mapping responses */}
+        {responses.map((response, index) => (
+          <CryptoDataBox component={Paper} key={index}>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setResponses(responses.filter((_, i) => i !== index))}
+              style={{ float: 'right' }}
+            >
+              Close
+            </Button>
 
-        {deviation && (
-          <Box marginTop="20px">
-            <Typography variant="h6" color="primary">Standard Deviation: {deviation}</Typography>
-          </Box>
-        )}
+            <Typography variant="subtitle2" color="textSecondary">
+              Coin: {response.coin} - Generated at: {response.timestamp}
+            </Typography>
+
+            {response.type === 'stats' ? (
+              <>
+                <Typography variant="h6" color="primary">Price: ${response.data.price}</Typography>
+                <Typography variant="h6" color="primary">Market Cap: ${response.data.marketCap}</Typography>
+                <Typography variant="h6" color="primary">24h Change: {response.data.change24h}%</Typography>
+              </>
+            ) : (
+              <Typography variant="h6" color="primary">Standard Deviation: {response.data}</Typography>
+            )}
+          </CryptoDataBox>
+        ))}
+
       </StyledContainer>
     </ThemeProvider>
   );

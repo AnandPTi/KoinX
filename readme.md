@@ -74,8 +74,8 @@ Here are some screenshots of the application in action:
 ![Demo Image 1](images/image%20copy%204.png)
 # Options for chosing coin
 ![Demo Image 2](images/image%20copy%205.png)
-# Fetched Details
-![Demo Image 3](images/image%20copy%206.png)
+# Fetched Details with the coin name and descending order of time stamp with close icon
+![Demo Image 3](images/image.png)
 # Any other coin's insights if you want to know other than these three
 ![Demo Image 4](images/image%20copy%207.png)
 
