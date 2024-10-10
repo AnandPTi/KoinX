@@ -53,7 +53,6 @@ PORT= 3000
 ### Start the Application
 Open two terminal windows. In the first window, start the backend server:
 ```bash
-cd backend
 node index.js
 ```
 
